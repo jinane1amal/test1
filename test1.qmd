@@ -14,23 +14,49 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library (stringr)
+library(kable)
 ```
 
 You'll find [here](https://github.com/jinane1amal/test1.git) the link to my github sample test
 
+## Question 1 
+
 ```{r}
+
 planets <- vroom("the+planets.csv")
 num_planets <- nrow(planets)
 num_variables <- ncol(planets)
 
-numerical_vars <- sapply(planets, is.numeric)
-all_numerical <- all(numerical_vars)
+cat("Number of planets:", num_planets, "\n")
+cat("Number of variables:", num_variables, "\n")
 
-if (num_planets == 736 && num_variables == 8 && all_numerical) {
-  message <- "Data loaded successfully. All checks passed."
+head(planets)
+
+numeric_columns <- c("PLANET_NUMBER", "Star_code", "mass (earth)", "density (earth)", "RELATIVE RADIUS")
+
+numeric_verification <- sapply(planets[, numeric_columns, drop = FALSE], is.numeric)
+
+if (num_planets == 736 && num_variables == 8 && all(numeric_verification)) {
+  cat("All good, let's go to the next question\n")
 } else {
-  message <- "Error in loading data or data checks failed."
+  cat("Smth is wring.\n")
 }
-cat(message)
+```
+
+## Question 2 
+
+```{r}
+
+num_observations <- nrow(planets)
+num_variables <- ncol(planets)
+missing_values <- colSums(is.na(planets))
+num_obs_with_missing <- sum(rowSums(is.na(planets)) > 0)
+
+summary_table <- data.frame(
+  Metric = c("Number of Observations", "Number of Variables", "Number of Missing Values", "Number of Obs with Missing"),
+  Value = c(num_observations, num_variables, sum(missing_values), num_obs_with_missing)
+)
+
+knitr::kable(summary_table)
 ```
 
