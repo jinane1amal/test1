@@ -78,4 +78,223 @@ ggplot(na.omit(planets), aes(x = `mass (earth)`, y = `density (earth)`)) +
        y = "Density (Earth)")
 
 ```
+## Question 4
+
+```{r}
+
+numeric_columns <- c("PLANET_NUMBER", "Star_code", "mass (earth)", "density (earth)", "RELATIVE RADIUS")
+
+extreme_planets <- planets %>%
+  slice(which.max(`density (earth)`), which.min(`density (earth)`),
+        which.max(`mass (earth)`), which.min(`mass (earth)`))
+
+kable(extreme_planets[, numeric_columns, drop = FALSE], format = "markdown")
+
+```
+## Question 5 
+```{r}
+
+terrain_data <- planets %>%
+
+  mutate(terrain_type = str_split(`TERRAIN TYPE`, pattern = "; ")) %>%
+  select(PLANET_NUMBER, terrain_type) %>%
+  unnest(terrain_type)
+
+
+# Extract climate types
+climate_data <- planets %>%
+  select(PLANET_NUMBER, climate) %>%
+  reframe(CLIMATE_TYPE = str_split(climate, ";")) %>%
+  unnest(CLIMATE_TYPE)
+
+# Print the head of the resulting data frames
+head(terrain_data)
+head(climate_data)
+
+
+
+```
+## Question 6 
+```{r}
+
+
+# Plot the distribution of the number of different climates per planet
+ggplot(climate_data, aes(x = "PLANET_NUMBER", fill = "CLIMATE_TYPE")) +
+  geom_bar() +
+  labs(title = "Distribution of Different Climates Per Planet",
+       x = "Planet Number",
+       y = "Count") +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+# Plot the distribution of the number of different terrain types per planet
+ggplot(terrain_data, aes(x = PLANET_NUMBER, fill = terrain_type)) +
+  geom_bar() +
+  labs(title = "Distribution of Different Terrain Types Per Planet",
+       x = "Planet Number",
+       y = "Count") +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+```
+## Question 7 
+``` {r}
+# Count the number of different climates per planet
+climate_count_per_planet <- climate_data %>%
+  group_by("PLANET_NUMBER") %>%
+  summarize(num_climates = n_distinct("climate_type"))
+
+# Count the number of different terrain types per planet
+terrain_count_per_planet <- terrain_data %>%
+  group_by(PLANET_NUMBER) %>%
+  summarize(num_terrain_types = n_distinct(terrain_type))
+
+# Plot the distribution of the number of different climates per planet
+ggplot(climate_count_per_planet, aes(x = num_climates)) +
+  geom_bar() +
+  labs(title = "Distribution of Different Climates Per Planet",
+       x = "Number of Climates",
+       y = "Count")
+
+# Plot the distribution of the number of different terrain types per planet
+ggplot(terrain_count_per_planet, aes(x = num_terrain_types)) +
+  geom_bar() +
+  labs(title = "Distribution of Different Terrain Types Per Planet",
+       x = "Number of Terrain Types",
+       y = "Count")
+
+```
+## Question 8
+```{r}
+
+stars <- vroom("Starlist (1).csv")
+
+```
+## Question 9
+```{r}
+# Assuming 'planets' and 'stars' datasets are already loaded
+
+# Check consistency between planets and stars datasets
+inconsistent_planets <- planets %>%
+  filter(!Star_code %in% stars$Star_code)
+
+# Number of stars with no associated planet
+stars_with_no_planet <- stars %>%
+  filter(!(Star_code %in% planets$Star_code))
+
+# Print the names of planets with inconsistent star codes
+if (nrow(inconsistent_planets) > 0) {
+  cat("Planets with inconsistent star codes:\n")
+  cat(inconsistent_planets$"p_name", sep = "\n")
+} else {
+  cat("No planets with inconsistent star codes found.\n")
+}
+
+# Print the number of stars with no associated planet
+cat("\nNumber of stars with no associated planet: ", nrow(stars_with_no_planet), "\n")
+
+```
+
+## Question 10
+```{r}
+# Split the 'type_of_star' column
+stars <- stars %>%
+  separate(col = "type of star", into = c("harvard_letter", "harvard_digit", "yerkes_class"), sep ="\\|")
+
+# Print the updated dataset
+head(stars)
+
+```
+
+## Question 11
+```{r}
+#summary
+temperature_distribution <- stars %>%
+  group_by(harvard_letter) %>%
+  summarize(count = n())
+ggplot(temperature_distribution, aes(x = harvard_letter, y = count)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
+  labs(title = "Distribution of Stars by Temperature Class",
+       x = "Temperature Class",
+       y = "Number of Stars")
+
+```
+
+## Question 12
+```{r}
+
+# Create a scatter plot
+ggplot(stars, aes(x = harvard_letter, y = harvard_digit, color = harvard_letter, size = harvard_digit)) +
+  geom_point(alpha = 0.7) +
+  scale_color_manual(values = rainbow(length(unique(stars$harvard_letter)))) +
+  labs(title = "Distribution of Stars by Temperature Class and Magnitude",
+       x = "Harvard Letter",
+       y = "Harvard Digit",
+       color = "Temperature Class",
+       size = "Harvard Digit")
+
+```
+
+## Question 13
+
+```{r}
+# Assuming 'stars' and 'reference_table' are loaded
+
+# Set a tolerance level for verification
+tolerance <- 0.01  # Adjust as needed
+
+# Select relevant columns for verification
+verification_data <- stars %>%
+  select(TEMPERATURE,`relative mass`, `star radius`,LUMINOSITY ) %>%
+  bind_cols(stars[, c("TEMPERATURE","relative mass", "star radius","LUMINOSITY")])
+
+# Verify and create flags
+verification_data <- stars %>%
+  mutate(
+    temperature_verified = abs(temperature - temperature_reference) < tolerance,
+    mass_verified = abs(mass - mass_reference) < tolerance,
+    radius_verified = abs(radius - radius_reference) < tolerance,
+    luminosity_verified = abs(luminosity - luminosity_reference) < tolerance
+  )
+
+# Set the file path where you want to save the CSV file
+csv_file_path <- "path/to/verification_results.csv"
+
+# Write the verification results to a new CSV file
+write.csv(verification_data, csv_file_path, row.names = FALSE)
+
+```
+## Question 15 
+```{r}
+
+ggplot(planets, aes(x = Star_code)) +
+  geom_bar() +
+  labs(title = "Distribution of Number of Planets per Star",
+       x = "Star Code",
+       y = "Number of Planets")
+
+```
+
+## option 2 
+```{r}
+planets_per_star <- planets %>%
+  group_by(Star_code) %>%
+  summarise(num_planets = n())
+
+ggplot(planets_per_star, aes(x = num_planets)) +
+  geom_bar(stat = "count", fill = "pink", color = "maroon") +
+  labs(title = "Distribution of the number og planets per star",
+       x = "Number of planets",
+       y = "Stars")
+```
+
+## question 16
+```{r}
+# Assuming 'planets' dataset is loaded and has a 'Star_class' column
+ggplot(stars, aes(x = Star_code, fill = yerkes_class)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Distribution of Number of Planets per Star by Star Class",
+       x = "Star Code",
+       y = "Number of Planets",
+       fill = "Star Class")
+
+```
 
