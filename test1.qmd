@@ -7,7 +7,7 @@ editor: visual
 
 ```{r}
 #| message: false
-here::i_am("galatic.Rproj")
+here::i_am("test1.Rproj")
 library(here)
 library(vroom)
 library(dplyr)
@@ -17,3 +17,20 @@ library (stringr)
 ```
 
 You'll find [here](https://github.com/jinane1amal/test1.git) the link to my github sample test
+
+```{r}
+planets <- vroom("the+planets.csv")
+num_planets <- nrow(planets)
+num_variables <- ncol(planets)
+
+numerical_vars <- sapply(planets, is.numeric)
+all_numerical <- all(numerical_vars)
+
+if (num_planets == 736 && num_variables == 8 && all_numerical) {
+  message <- "Data loaded successfully. All checks passed."
+} else {
+  message <- "Error in loading data or data checks failed."
+}
+cat(message)
+```
+
