@@ -14,7 +14,7 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library (stringr)
-library(kable)
+library(knitr)
 ```
 
 You'll find [here](https://github.com/jinane1amal/test1.git) the link to my github sample test
@@ -58,5 +58,24 @@ summary_table <- data.frame(
 )
 
 knitr::kable(summary_table)
+```
+
+## Question 3 : 
+
+```{r}
+
+
+# Create a scatter plot
+ggplot(planets, aes(x = `mass (earth)`, y = `density (earth)`)) +
+  geom_point() +
+  labs(title = "Density of a Planet as a Function of Mass",
+       x = "Mass (Earth)",
+       y = "Density (Earth)")
+ggplot(na.omit(planets), aes(x = `mass (earth)`, y = `density (earth)`)) +
+  geom_point() +
+  labs(title = "Density of a Planet as a Function of Mass",
+       x = "Mass (Earth)",
+       y = "Density (Earth)")
+
 ```
 
