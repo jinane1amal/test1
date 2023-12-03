@@ -1,0 +1,19 @@
+---
+title: "test1"
+author: "j.a"
+format: html
+editor: visual
+---
+
+```{r}
+#| message: false
+here::i_am("galatic.Rproj")
+library(here)
+library(vroom)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library (stringr)
+```
+
+You'll find [here](https://github.com/jinane1amal/test1.git) the link to my github sample test
